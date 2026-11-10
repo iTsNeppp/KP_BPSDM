@@ -18,7 +18,9 @@ class Schedule extends Model
         'jp',
         'link_zoom',
         'pic',
-        'pengajar_id' 
+        'pengajar_id',
+        'surat_tugas'
+         
     ];
 
     // Relasi ke User Pengajar

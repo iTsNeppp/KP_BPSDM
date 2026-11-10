@@ -143,4 +143,28 @@ class ProfileController extends Controller
 
         return redirect()->back()->with('success', 'Password berhasil diperbarui.');
     }
+     public function viewPengajarDoc($type)
+    {
+        $user = Auth::user();
+        $pengajar = $user->pengajar;
+
+        if (!$pengajar) {
+            abort(404, 'Data pengajar tidak ditemukan.');
+        }
+
+        // Tentukan path berdasarkan tipe dokumen yang diminta
+        $filePath = match($type) {
+            'cv'          => $pengajar->cv_path,
+            'sertifikat'  => $pengajar->sertifikat_path,
+            'surat_tugas' => $pengajar->surat_tugas_path,
+            default       => null,
+        };
+
+        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+            abort(404, 'Berkas fisik PDF tidak ditemukan di server.');
+        }
+
+        // Tampilkan langsung di browser dengan header PDF yang benar
+        return Storage::disk('public')->response($filePath);
+    }
 }

@@ -4,7 +4,7 @@
 <div class="authentication-wrapper authentication-basic container-p-y">
     <div class="authentication-inner">
         
-        <!-- Tombol Kembali ke Beranda (Diletakkan di luar Card agar terlihat modern) -->
+        <!-- Tombol Kembali ke Beranda -->
         <div class="mb-3 animate__animated animate__fadeInLeft">
             <a href="{{ url('/') }}" class="d-flex align-items-center text-muted fw-semibold">
                 <i class="bx bx-chevron-left fs-4"></i>
@@ -50,6 +50,7 @@
                         @enderror
                     </div>
 
+                    <!-- Input Password dengan Toggle Show/Hide -->
                     <div class="mb-3 form-password-toggle">
                         <div class="d-flex justify-content-between">
                             <label class="form-label fw-bold" for="password">Password</label>
@@ -59,8 +60,10 @@
                         </div>
                         <div class="input-group input-group-merge">
                             <span class="input-group-text"><i class="bx bx-lock-alt"></i></span>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" placeholder="••••••••" style="border-left: none; border-right: none;" />
-                            <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                            <input type="password" id="passwordInput" class="form-control @error('password') is-invalid @enderror" name="password" placeholder="••••••••" style="border-left: none; border-right: none;" />
+                            <span class="input-group-text cursor-pointer" id="togglePassword">
+                                <i class="bx bx-hide" id="togglePasswordIcon"></i>
+                            </span>
                         </div>
                         @error('password')
                             <small class="text-danger mt-1 d-block">{{ $message }}</small>
@@ -127,7 +130,6 @@
         .authentication-wrapper.authentication-basic .authentication-inner { padding: 0 1rem; }
     }
 
-    /* Dekorasi Lingkaran di Background (Hidden on Mobile for Performance) */
     .bg-shape-1 {
         position: fixed;
         top: -100px;
@@ -150,7 +152,6 @@
         z-index: -1;
     }
 
-    /* Input Focus Styling */
     .input-group-text {
         background-color: #fcfcff;
         border-color: #d9dee3;
@@ -160,7 +161,6 @@
         border-color: #696cff !important;
     }
 
-    /* Button Login Animation */
     .btn-login {
         background: linear-gradient(45deg, #696cff, #43459d);
         border: none;
@@ -171,7 +171,6 @@
         box-shadow: 0 10px 20px rgba(105, 108, 255, 0.3) !important;
     }
 
-    /* Google Button */
     .google-btn {
         border: 1px solid #d9dee3;
         background: white;
@@ -183,7 +182,6 @@
         transform: scale(1.01);
     }
 
-    /* Divider */
     .divider-text {
         background-color: transparent !important;
         font-weight: 700;
@@ -196,5 +194,32 @@
     .shadow-xs {
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
 </style>
+
+<!-- SCRIPT UNTUK TOGGLE LIHAT PASSWORD -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('passwordInput');
+    const icon = document.getElementById('togglePasswordIcon');
+
+    if (toggleBtn && passwordInput && icon) {
+        toggleBtn.addEventListener('click', function () {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bx-hide');
+                icon.classList.add('bx-show');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bx-show');
+                icon.classList.add('bx-hide');
+            }
+        });
+    }
+});
+</script>
 @endsection

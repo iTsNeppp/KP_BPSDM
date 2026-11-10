@@ -173,16 +173,7 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label">Asal Instansi/Bidang <small>(Opsional)</small></label>
-                        <select name="bidang" class="form-select">
-                            <option value="">Luar BPSDM / Tidak Terikat</option>
-                            @foreach($listBidang as $b)
-                                <option value="{{ $b }}">{{ $b }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
+
                     <hr class="my-4">
                     <h6 class="fw-bold text-info"><i class="bx bx-lock-alt me-1"></i> Data Login Default</h6>
                     
@@ -236,7 +227,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Penyelenggara / Bidang</label>
+                        <label class="form-label">Bidang</label>
                         <select name="bidang" class="form-select" required>
                             @foreach($listBidang as $b)
                                 <option value="{{ $b }}">{{ $b }}</option>

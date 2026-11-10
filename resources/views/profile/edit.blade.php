@@ -3,7 +3,7 @@
 @section('title', 'Pengaturan Profil')
 
 @push('css')
-<!-- Select2 CSS -->
+<!-- Select2 CSS & Theme Bootstrap 5 -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <style>
@@ -11,6 +11,9 @@
         border-color: #d9dee3;
         border-radius: 0.375rem;
         min-height: 38px;
+    }
+    .select2-selection__clear {
+        display: none !important;
     }
 </style>
 @endpush
@@ -41,7 +44,7 @@
         </div>
     @endif
 
-    {{-- ALERT JIKA ADA ERROR DARI VALIDASI MODAL --}}
+    {{-- ALERT ERROR VALIDASI --}}
     @if ($errors->any())
         <div class="alert alert-danger border-0 shadow-sm alert-dismissible mb-4" role="alert">
             <h6 class="alert-heading fw-bold mb-1"><i class="bx bx-error-circle me-1"></i> Terjadi kesalahan:</h6>
@@ -57,52 +60,107 @@
     <div class="row">
         <div class="col-md-12">
             
-            {{-- KHUSUS PENGAJAR: CARD RINGKASAN DATA PENGAJAR & DOKUMEN --}}
+            <!-- ======================================================== -->
+            <!-- KARTU KHUSUS PENGAJAR (DATA PROFIL, REKENING & BERKAS)   -->
+            <!-- ======================================================== -->
             @if($user->role === 'pengajar')
-            <div class="card mb-4 border-start border-info border-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title text-info mb-0">
-                            <i class="bx bx-chalkboard me-1"></i> Data Tenaga Pengajar & Keuangan
-                        </h5>
-                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalEditPengajar">
-                            <i class="bx bx-edit-alt me-1"></i> Perbarui Data Ini
-                        </button>
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title text-info mb-0 fw-bold">
+                        <i class="bx bx-wallet text-warning me-1"></i> Informasi Tenaga Pengajar & Rekening Keuangan
+                    </h5>
+                    @if($user->pengajar && $user->pengajar->nomor_rekening)
+                        <span class="badge bg-label-success">Data Lengkap</span>
+                    @else
+                        <span class="badge bg-label-danger">Belum Lengkap</span>
+                    @endif
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-4 mb-3">
+                        <!-- Kolom Kiri: Profil Kepegawaian -->
+                        <div class="col-md-6 border-end">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bx bx-user me-1 text-primary"></i> Data Kepegawaian</h6>
+                            <div class="bg-light p-3 rounded border">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small text-muted">Jabatan Fungsional:</span>
+                                    <span class="small fw-bold text-dark">{{ $user->jabatan ?? 'Tenaga Pengajar' }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small text-muted">Pangkat / Golongan:</span>
+                                    <span class="small fw-bold text-dark">{{ $user->pengajar->pangkat_golongan ?? '-' }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Instansi / Unit Kerja:</span>
+                                    <span class="small fw-bold text-dark">{{ $user->pengajar->instansi ?? $user->instansi ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kolom Kanan: Data Rekening & Finansial -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bx bx-credit-card me-1 text-warning"></i> Data Rekening Honorarium</h6>
+                            <div class="bg-light p-3 rounded border">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small text-muted">Bank Asal Rekening:</span>
+                                    <span class="small fw-bold text-dark">{{ $user->pengajar->nama_bank ?? '-' }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small text-muted">Nomor Rekening:</span>
+                                    <span class="small fw-bold text-primary">{{ $user->pengajar->nomor_rekening ?? '-' }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small text-muted">Rekening Atas Nama:</span>
+                                    <span class="small fw-bold text-dark">{{ $user->pengajar->rekening_atas_nama ?? $user->pengajar->nama_rekening ?? '-' }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Nomor NPWP:</span>
+                                    <span class="small fw-bold text-dark">{{ $user->pengajar->npwp ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-3 col-6">
-                            <small class="text-muted d-block">Pangkat / Golongan:</small>
-                            <span class="fw-bold text-dark">{{ $user->pengajar->pangkat_golongan ?? '-' }}</span>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <small class="text-muted d-block">Bank & No. Rekening:</small>
-                            <span class="fw-bold text-dark">{{ $user->pengajar->nama_bank ?? '-' }} ({{ $user->pengajar->nomor_rekening ?? '-' }})</span>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <small class="text-muted d-block">Rekening A/N:</small>
-                            <span class="fw-bold text-dark">{{ $user->pengajar->nama_rekening ?? '-' }}</span>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <small class="text-muted d-block">Status Kelengkapan Berkas:</small>
+
+                    <!-- Status Berkas Dokumen -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small fw-bold text-muted me-2">Status Berkas Terunggah:</span>
                             @php
                                 $hasCv = $user->pengajar && $user->pengajar->cv_path;
                                 $hasSertifikat = $user->pengajar && $user->pengajar->sertifikat_path;
-                                $hasSurat = $user->pengajar && $user->pengajar->surat_tugas_path;
+
                             @endphp
-                            <div class="d-flex gap-1 mt-1">
-                                <span class="badge {{ $hasCv ? 'bg-label-success' : 'bg-label-secondary' }}" title="CV">CV</span>
-                                <span class="badge {{ $hasSertifikat ? 'bg-label-success' : 'bg-label-secondary' }}" title="Sertifikat">Sertifikat</span>
-                                <span class="badge {{ $hasSurat ? 'bg-label-success' : 'bg-label-secondary' }}" title="Surat Tugas">Surat Tugas</span>
-                            </div>
+                            
+                            @if($hasCv)
+                                <a href="{{ route('pengajar.doc.view', 'cv') }}" target="_blank" class="badge bg-label-success text-decoration-none" title="Klik untuk melihat CV">
+                                    <i class="bx bx-check me-1"></i> CV
+                                </a>
+                            @else
+                                <span class="badge bg-label-secondary"><i class="bx bx-x me-1"></i> CV</span>
+                            @endif
+
+                            @if($hasSertifikat)
+                                <a href="{{ route('pengajar.doc.view', 'sertifikat') }}" target="_blank" class="badge bg-label-success text-decoration-none" title="Klik untuk melihat Sertifikat">
+                                    <i class="bx bx-check me-1"></i> Sertifikat
+                                </a>
+                            @else
+                                <span class="badge bg-label-secondary"><i class="bx bx-x me-1"></i> Sertifikat</span>
+                            @endif
                         </div>
+
+                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalEditPengajar">
+                            <i class="bx bx-edit-alt me-1"></i> Perbarui Data & Berkas Pengajar
+                        </button>
                     </div>
                 </div>
             </div>
             @endif
 
-            {{-- CARD DETAIL PROFIL UMUM --}}
-            <div class="card mb-4">
-                <h5 class="card-header">Detail Akun</h5>
+            <!-- ======================================================== -->
+            <!-- CARD DETAIL AKUN UMUM                                    -->
+            <!-- ======================================================== -->
+            <div class="card mb-4 shadow-sm border-0">
+                <h5 class="card-header border-bottom">Detail Akun</h5>
                 <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="card-body">
@@ -152,8 +210,10 @@
                 </form>
             </div>
 
-            {{-- CARD GANTI PASSWORD --}}
-            <div class="card">
+            <!-- ======================================================== -->
+            <!-- CARD GANTI PASSWORD                                      -->
+            <!-- ======================================================== -->
+            <div class="card shadow-sm border-0">
                 <h5 class="card-header border-bottom mb-3">Keamanan Akun</h5>
                 <div class="card-body">
                     <div class="alert alert-warning mb-4">
@@ -191,16 +251,15 @@
     </div>
 </div>
 
-{{-- ========================================================================= --}}
-{{-- MODAL KHUSUS EDIT PENGAJAR (PROFIL, REKENING, & DOKUMEN)                 --}}
-{{-- ========================================================================= --}}
+<!-- ========================================================================= -->
+<!-- MODAL KHUSUS EDIT PENGAJAR (PROFIL, REKENING, & DOKUMEN)                 -->
+<!-- ========================================================================= -->
 @if($user->role === 'pengajar')
 <div class="modal fade" id="modalEditPengajar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="modal-content">
             @csrf @method('PUT')
             
-            {{-- Input hidden agar data name & whatsapp tetap terkirim --}}
             <input type="hidden" name="name" value="{{ $user->name }}">
             <input type="hidden" name="whatsapp" value="{{ $user->whatsapp }}">
 
@@ -211,7 +270,7 @@
 
             <div class="modal-body p-4">
                 
-                {{-- 1. DATA KEPEGAWAIAN --}}
+                <!-- 1. DATA KEPEGAWAIAN -->
                 <h6 class="fw-bold text-info border-bottom pb-2 mb-3">
                     <i class="bx bx-id-card me-1"></i> 1. Profil & Kepegawaian
                 </h6>
@@ -222,19 +281,45 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Jabatan Fungsional <span class="text-danger">*</span></label>
-                        <input type="text" name="jabatan" class="form-control" value="{{ old('jabatan', $user->jabatan) }}" required>
+                        <select name="jabatan" class="form-select" required>
+                            <option value="">-- Pilih Jabatan Fungsional --</option>
+                            <option value="Widyaiswara Ahli Pertama" {{ old('jabatan', $user->jabatan) == 'Widyaiswara Ahli Pertama' ? 'selected' : '' }}>
+                                Widyaiswara Ahli Pertama
+                            </option>
+                            <option value="Widyaiswara Ahli Muda" {{ old('jabatan', $user->jabatan) == 'Widyaiswara Ahli Muda' ? 'selected' : '' }}>
+                                Widyaiswara Ahli Muda
+                            </option>
+                            <option value="Widyaiswara Ahli Madya" {{ old('jabatan', $user->jabatan) == 'Widyaiswara Ahli Madya' ? 'selected' : '' }}>
+                                Widyaiswara Ahli Madya
+                            </option>
+                            <option value="Widyaiswara Ahli Utama" {{ old('jabatan', $user->jabatan) == 'Widyaiswara Ahli Utama' ? 'selected' : '' }}>
+                                Widyaiswara Ahli Utama
+                            </option>
+                        </select>
                     </div>
+
+                    <!-- DROPDOWN PANGKAT / GOLONGAN MODAL (SELECT2 SEARCHABLE) -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Pangkat / Golongan <span class="text-danger">*</span></label>
-                        <input type="text" name="pangkat_golongan" class="form-control" value="{{ old('pangkat_golongan', $user->pengajar->pangkat_golongan ?? '') }}" required>
+                        <select name="pangkat_golongan" id="select_pangkat_golongan_modal" class="form-select" required>
+                            <option value="{{ $user->pengajar->pangkat_golongan ?? '' }}" selected>
+                                {{ $user->pengajar->pangkat_golongan ?? '-- Sedang Memuat Pangkat / Golongan... --' }}
+                            </option>
+                        </select>
                     </div>
+
+                    <!-- DROPDOWN INSTANSI PEMERINTAHAN MODAL (SELECT2 SEARCHABLE) -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Instansi / Unit Kerja <span class="text-danger">*</span></label>
-                        <input type="text" name="instansi" class="form-control" value="{{ old('instansi', $user->pengajar->instansi ?? $user->instansi) }}" required>
+                        <select name="instansi" id="select_instansi_modal" class="form-select" required>
+                            <option value="{{ $user->pengajar->instansi ?? $user->instansi ?? '' }}" selected>
+                                {{ $user->pengajar->instansi ?? $user->instansi ?? '-- Pilih / Ketik Instansi --' }}
+                            </option>
+                        </select>
                     </div>
                 </div>
 
-                {{-- 2. INFORMASI REKENING --}}
+                <!-- 2. INFORMASI REKENING -->
                 <h6 class="fw-bold text-info border-bottom pb-2 mb-3">
                     <i class="bx bx-wallet me-1"></i> 2. Informasi Rekening & Honor
                 </h6>
@@ -247,9 +332,11 @@
                         <label class="form-label fw-semibold">Nomor Rekening <span class="text-danger">*</span></label>
                         <input type="number" name="nomor_rekening" class="form-control" value="{{ old('nomor_rekening', $user->pengajar->nomor_rekening ?? '') }}" required>
                     </div>
+
+                    <!-- DROPDOWN BANK MODAL (SELECT2 SEARCHABLE) -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Bank Asal Rekening <span class="text-danger">*</span></label>
-                        <select name="nama_bank" id="select_bank_modal" class="form-select select2-bank" required>
+                        <select name="nama_bank" id="select_bank_modal" class="form-select" required>
                             <option value="{{ $user->pengajar->nama_bank ?? '' }}" selected>
                                 {{ $user->pengajar->nama_bank ?? '-- Pilih Bank --' }}
                             </option>
@@ -257,21 +344,21 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Rekening Atas Nama <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_rekening" class="form-control" value="{{ old('nama_rekening', $user->pengajar->nama_rekening ?? '') }}" required>
+                        <input type="text" name="rekening_atas_nama" class="form-control" value="{{ old('rekening_atas_nama', $user->pengajar->rekening_atas_nama ?? $user->pengajar->nama_rekening ?? '') }}" required>
                     </div>
                 </div>
 
-                {{-- 3. KELENGKAPAN DOKUMEN (PDF MAX 5MB) --}}
+                <!-- 3. KELENGKAPAN DOKUMEN -->
                 <h6 class="fw-bold text-info border-bottom pb-2 mb-3">
                     <i class="bx bx-file me-1"></i> 3. Berkas & Dokumen Pengajar (PDF Max 5MB)
                 </h6>
                 <div class="row g-3">
-                    <!-- File CV -->
+                    <!-- CV -->
                     <div class="col-md-12">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label fw-semibold mb-0">Curriculum Vitae (CV)</label>
                             @if($user->pengajar && $user->pengajar->cv_path)
-                                <a href="{{ asset('storage/' . $user->pengajar->cv_path) }}" target="_blank" class="badge bg-label-primary text-decoration-none">
+                                <a href="{{ route('pengajar.doc.view', 'cv') }}" target="_blank" class="badge bg-label-primary text-decoration-none">
                                     <i class="bx bx-show me-1"></i> Lihat CV Saat Ini
                                 </a>
                             @endif
@@ -280,35 +367,20 @@
                         <div class="form-text small">Kosongkan jika tidak ingin mengubah CV.</div>
                     </div>
 
-                    <!-- File Sertifikat -->
+                    <!-- Sertifikat -->
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label fw-semibold mb-0">Sertifikat ToT / Kompetensi</label>
                             @if($user->pengajar && $user->pengajar->sertifikat_path)
-                                <a href="{{ asset('storage/' . $user->pengajar->sertifikat_path) }}" target="_blank" class="badge bg-label-primary text-decoration-none">
-                                    <i class="bx bx-show me-1"></i> Lihat File
+                                <a href="{{ route('pengajar.doc.view', 'sertifikat') }}" target="_blank" class="badge bg-label-success text-decoration-none">
+                                    <i class="bx bx-show me-1"></i> Lihat Sertifikat
                                 </a>
                             @endif
                         </div>
                         <input type="file" name="file_sertifikat" class="form-control" accept=".pdf">
                         <div class="form-text small">Format PDF maksimal 5MB.</div>
                     </div>
-
-                    <!-- File Surat Tugas -->
-                    <div class="col-md-6">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="form-label fw-semibold mb-0">Surat Tugas Pengajar</label>
-                            @if($user->pengajar && $user->pengajar->surat_tugas_path)
-                                <a href="{{ asset('storage/' . $user->pengajar->surat_tugas_path) }}" target="_blank" class="badge bg-label-primary text-decoration-none">
-                                    <i class="bx bx-show me-1"></i> Lihat File
-                                </a>
-                            @endif
-                        </div>
-                        <input type="file" name="file_surat_tugas" class="form-control" accept=".pdf">
-                        <div class="form-text small">Format PDF maksimal 5MB.</div>
-                    </div>
                 </div>
-
             </div>
 
             <div class="modal-footer border-top">
@@ -329,52 +401,162 @@
 
 <script>
 $(document).ready(function() {
-    const $bankSelect = $('#select_bank_modal');
-    const currentBank = "{{ $user->pengajar->nama_bank ?? '' }}";
-    const apiBankUrl = 'https://raw.githubusercontent.com/riod94/list-bank-indonesia/master/bank.json';
+    const $modal = $('#modalEditPengajar');
 
-    const fallbackBanks = [
-        "BANK BJB", "BANK BJB SYARIAH", "BANK BRI", "BANK MANDIRI", "BANK BNI", "BANK BCA", 
-        "BANK SYARIAH INDONESIA (BSI)", "BANK CIMB NIAGA", "BANK PERMATA", "BANK DANAMON", 
-        "BANK TABUNGAN NEGARA (BTN)", "BANK PANIN", "BANK MEGA", "BANK DKI", "BANK JATENG", "BANK JATIM"
+    // ========================================================
+    // 1. DATA PANGKAT / GOLONGAN (PNS & PPPK)
+    // ========================================================
+    const $pangkatSelect = $('#select_pangkat_golongan_modal');
+    const selectedPangkat = "{{ old('pangkat_golongan', $user->pengajar->pangkat_golongan ?? '') }}";
+
+    const masterPangkat = [
+        { "label": "Juru Muda (I/a)", "kategori": "PNS" },
+        { "label": "Juru Muda Tingkat I (I/b)", "kategori": "PNS" },
+        { "label": "Juru (I/c)", "kategori": "PNS" },
+        { "label": "Juru Tingkat I (I/d)", "kategori": "PNS" },
+        { "label": "Pengatur Muda (II/a)", "kategori": "PNS" },
+        { "label": "Pengatur Muda Tingkat I (II/b)", "kategori": "PNS" },
+        { "label": "Pengatur (II/c)", "kategori": "PNS" },
+        { "label": "Pengatur Tingkat I (II/d)", "kategori": "PNS" },
+        { "label": "Penata Muda (III/a)", "kategori": "PNS" },
+        { "label": "Penata Muda Tingkat I (III/b)", "kategori": "PNS" },
+        { "label": "Penata (III/c)", "kategori": "PNS" },
+        { "label": "Penata Tingkat I (III/d)", "kategori": "PNS" },
+        { "label": "Pembina (IV/a)", "kategori": "PNS" },
+        { "label": "Pembina Tingkat I (IV/b)", "kategori": "PNS" },
+        { "label": "Pembina Utama Muda (IV/c)", "kategori": "PNS" },
+        { "label": "Pembina Utama Madya (IV/d)", "kategori": "PNS" },
+        { "label": "Pembina Utama (IV/e)", "kategori": "PNS" },
+        { "label": "Golongan VII - PPPK (Setara III/a)", "kategori": "PPPK" },
+        { "label": "Golongan IX - PPPK (Setara III/a)", "kategori": "PPPK" },
+        { "label": "Golongan X - PPPK (Setara III/b)", "kategori": "PPPK" },
+        { "label": "Golongan XI - PPPK (Setara III/c)", "kategori": "PPPK" },
+        { "label": "Golongan XIII - PPPK (Setara IV/a)", "kategori": "PPPK" }
     ];
 
-    // Inisialisasi Select2 di dalam Modal
-    function initBankSelect2() {
-        $bankSelect.select2({
-            theme: 'bootstrap-5',
-            dropdownParent: $('#modalEditPengajar'), // Wajib agar dropdown Select2 bekerja di dalam modal Bootstrap
-            placeholder: '-- Pilih / Cari Bank --',
-            allowClear: true,
-            width: '100%'
-        });
+    let pangkatOptions = '<option value="">-- Pilih / Cari Pangkat & Golongan --</option>';
+    const pnsList = masterPangkat.filter(item => item.kategori === 'PNS');
+    const pppkList = masterPangkat.filter(item => item.kategori === 'PPPK');
+
+    pangkatOptions += '<optgroup label="PNS (Pegawai Negeri Sipil)">';
+    pnsList.forEach(item => {
+        const isSelected = (selectedPangkat === item.label) ? 'selected' : '';
+        pangkatOptions += `<option value="${item.label}" ${isSelected}>${item.label}</option>`;
+    });
+    pangkatOptions += '</optgroup>';
+
+    pangkatOptions += '<optgroup label="PPPK (Pegawai Pemerintah dengan Perjanjian Kerja)">';
+    pppkList.forEach(item => {
+        const isSelected = (selectedPangkat === item.label) ? 'selected' : '';
+        pangkatOptions += `<option value="${item.label}" ${isSelected}>${item.label}</option>`;
+    });
+    pangkatOptions += '</optgroup>';
+
+    $pangkatSelect.html(pangkatOptions).select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $modal,
+        placeholder: '-- Ketik untuk mencari Golongan / Pangkat --',
+        allowClear: false,
+        width: '100%'
+    });
+
+    // ========================================================
+    // 2. DATA INSTANSI PEMERINTAHAN (SEARCHABLE + TAGS)
+    // ========================================================
+    const $instansiSelect = $('#select_instansi_modal');
+    const selectedInstansi = "{{ old('instansi', $user->pengajar->instansi ?? $user->instansi ?? '') }}";
+
+    const masterInstansi = [
+        "BPSDM Provinsi Jawa Barat",
+        "Pemerintah Daerah Provinsi Jawa Barat",
+        "Badan Kepegawaian Daerah Provinsi Jawa Barat",
+        "Kementerian Dalam Negeri (Kemendagri)",
+        "Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi (KemenPAN-RB)",
+        "Badan Kepegawaian Negara (BKN)",
+        "Lembaga Administrasi Negara (LAN)",
+        "Badan Pengawasan Keuangan dan Pembangunan (BPKP)",
+        "Badan Pusat Statistik (BPS)",
+        "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi",
+        "Kementerian Keuangan",
+        "Kementerian Kesehatan",
+        "Kementerian Agama",
+        "Kementerian Hukum dan HAM",
+        "Kementerian Komunikasi dan Informatika",
+        "Kementerian Perhubungan",
+        "Pemerintah Kota Bandung",
+        "Pemerintah Kabupaten Bandung",
+        "Pemerintah Kabupaten Bandung Barat",
+        "Pemerintah Kota Cimahi",
+        "Pemerintah Kabupaten Sumedang",
+        "Pemerintah Kota Bogor",
+        "Pemerintah Kabupaten Bogor",
+        "Pemerintah Kota Bekasi",
+        "Pemerintah Kabupaten Bekasi",
+        "Pemerintah Kabupaten Cirebon",
+        "Pemerintah Kota Cirebon",
+        "Pemerintah Kabupaten Garut",
+        "Pemerintah Kabupaten Tasikmalaya",
+        "Pemerintah Kota Tasikmalaya",
+        "Pemerintah Kabupaten Sukabumi",
+        "Pemerintah Kota Sukabumi",
+        "Pemerintah Kabupaten Cianjur",
+        "Pemerintah Kabupaten Karawang",
+        "Pemerintah Kabupaten Purwakarta",
+        "Pemerintah Kabupaten Subang",
+        "Pemerintah Kabupaten Indramayu",
+        "Pemerintah Kabupaten Majalengka",
+        "Pemerintah Kabupaten Kuningan",
+        "Pemerintah Kabupaten Ciamis",
+        "Pemerintah Kota Banjar",
+        "Pemerintah Kabupaten Pangandaran"
+    ];
+
+    let instansiOptions = '<option value="">-- Pilih / Ketik Instansi Pemerintahan --</option>';
+    if (selectedInstansi && !masterInstansi.includes(selectedInstansi)) {
+        masterInstansi.unshift(selectedInstansi);
     }
 
-    function renderOptions(banks) {
-        let options = '<option value="">-- Pilih Bank Asal Rekening --</option>';
-        banks.forEach(bank => {
-            let bankName = typeof bank === 'object' ? (bank.namaBank || bank.name || bank.label) : bank;
-            if (bankName) {
-                bankName = bankName.toUpperCase();
-                const isSelected = (currentBank && currentBank.toUpperCase() === bankName) ? 'selected' : '';
-                options += `<option value="${bankName}" ${isSelected}>${bankName}</option>`;
-            }
-        });
-        $bankSelect.html(options);
-        initBankSelect2();
-    }
+    masterInstansi.forEach(name => {
+        const isSelected = (selectedInstansi && selectedInstansi.toLowerCase() === name.toLowerCase()) ? 'selected' : '';
+        instansiOptions += `<option value="${name}" ${isSelected}>${name}</option>`;
+    });
 
-    // Ambil data Bank
-    fetch(apiBankUrl)
-        .then(response => response.json())
-        .then(data => {
-            const list = Array.isArray(data) ? data : (data.data || data.banks || []);
-            renderOptions(list);
-        })
-        .catch(err => {
-            console.warn('API luar gagal, menggunakan fallback:', err);
-            renderOptions(fallbackBanks);
-        });
+    $instansiSelect.html(instansiOptions).select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $modal,
+        placeholder: '-- Ketik / Cari Instansi Pemerintahan --',
+        allowClear: false,
+        tags: true,
+        width: '100%'
+    });
+
+    // ========================================================
+    // 3. DATA BANK ASAL REKENING (SEARCHABLE)
+    // ========================================================
+    const $bankSelect = $('#select_bank_modal');
+    const selectedBank = "{{ old('nama_bank', $user->pengajar->nama_bank ?? '') }}";
+
+    const masterBank = [
+        "BANK BJB", "BANK BJB SYARIAH", "BANK BRI", "BANK MANDIRI", "BANK BNI", "BANK BCA", 
+        "BANK SYARIAH INDONESIA (BSI)", "BANK CIMB NIAGA", "BANK PERMATA", "BANK DANAMON", 
+        "BANK TABUNGAN NEGARA (BTN)", "BANK PANIN", "BANK MEGA", "BANK DKI", "BANK JATENG", 
+        "BANK JATIM", "BANK BUKOPIN", "BANK BTPN", "BANK OCBC NISP", "BANK MAYBANK INDONESIA"
+    ];
+
+    let bankOptions = '<option value="">-- Pilih / Cari Bank Asal Rekening --</option>';
+    masterBank.forEach(name => {
+        const isSelected = (selectedBank && selectedBank.toUpperCase() === name.toUpperCase()) ? 'selected' : '';
+        bankOptions += `<option value="${name}" ${isSelected}>${name}</option>`;
+    });
+
+    $bankSelect.html(bankOptions).select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $modal,
+        placeholder: '-- Ketik untuk mencari Bank --',
+        allowClear: false,
+        tags: true,
+        width: '100%'
+    });
 });
 </script>
 @endpush

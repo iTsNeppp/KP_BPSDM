@@ -8,6 +8,7 @@ use App\Models\Participant;
 use App\Models\User; 
 use App\Models\Folder; 
 use App\Models\EvaluationFormL1;
+use App\Models\Pengajar;
 use App\Helpers\LogHelper;
 use App\Imports\ParticipantImport;
 use App\Exports\TrainingEvaluationExport;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel; 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon; 
@@ -533,5 +535,25 @@ class TrainingController extends Controller
             ->sum('jp');
 
         return view('pengajar.history', compact('trainings', 'user', 'search', 'totalJpRiwayat'));
+    }
+     public function viewSuratTugasPengajar($id)
+    {
+        $user = Auth::user();
+
+        // 1. Cari path surat tugas dari jadwal sesi pelatihan ini
+        $schedule = Schedule::where('training_id', $id)
+            ->where('pengajar_id', $user->id)
+            ->whereNotNull('surat_tugas')
+            ->first();
+
+        $path = $schedule ? $schedule->surat_tugas : ($user->pengajar->surat_tugas_path ?? null);
+
+        // 2. Cek apakah file fisik ada di storage
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            abort(404, 'Berkas fisik PDF Surat Tugas tidak ditemukan di server.');
+        }
+
+        // 3. Alirkan file langsung sebagai response PDF ke browser
+        return Storage::disk('public')->response($path);
     }
 }

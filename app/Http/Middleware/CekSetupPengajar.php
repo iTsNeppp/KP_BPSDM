@@ -11,11 +11,16 @@ class CekSetupPengajar
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check() && Auth::user()->role === 'pengajar') {
-            // Jika data di tabel pengajars belum ada, arahkan ke halaman setup
-            if (!Auth::user()->pengajar) {
-                // Cegah redirect loop (jangan redirect jika sedang di halaman setup atau logout)
-                if (!$request->is('pengajar/setup-profil') && !$request->is('logout')) {
-                    return redirect()->route('pengajar.setup')->with('warning', 'Selamat datang! Silakan perbarui password dan lengkapi profil Anda untuk melanjutkan.');
+            $user = Auth::user();
+            
+            // PERIKSA: Jika data pengajar belum ada ATAU rekeningnya masih kosong
+            $isBelumSetup = !$user->pengajar || empty($user->pengajar->nomor_rekening) || empty($user->pengajar->nama_bank);
+
+            if ($isBelumSetup) {
+                // Cegah loop jika sedang di halaman setup atau logout
+                if (!$request->routeIs('pengajar.setup', 'pengajar.setup.store', 'logout')) {
+                    return redirect()->route('pengajar.setup')
+                        ->with('warning', 'Silakan lengkapi profil dan data rekening Anda terlebih dahulu.');
                 }
             }
         }

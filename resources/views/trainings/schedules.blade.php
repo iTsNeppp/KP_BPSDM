@@ -47,29 +47,36 @@
             <div class="card-body pt-3">
                 <form action="{{ route('schedules.store', $training->id) }}" method="POST">
                     @csrf
+                    
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Tanggal <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold">Tanggal Sesi <span class="text-danger">*</span></label>
                         <input type="date" name="date" class="form-control" value="{{ old('date', date('Y-m-d')) }}" required>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label fw-bold">Mulai <span class="text-danger">*</span></label>
-                            <input type="time" name="start_time" class="form-control" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-bold">Selesai <span class="text-danger">*</span></label>
-                            <input type="time" name="end_time" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-8">
-                            <label class="form-label fw-bold">Materi / Kegiatan <span class="text-danger">*</span></label>
-                            <input type="text" name="activity" class="form-control" placeholder="Contoh: Pengantar Digitalisasi" required>
+
+                    <!-- PENGATURAN WAKTU & AKUMULASI JP (1 JP = 45 MENIT) -->
+                    <div class="row mb-3 g-2">
+                        <div class="col-4">
+                            <label class="form-label fw-bold">1. Mulai <span class="text-danger">*</span></label>
+                            <input type="time" name="start_time" id="add_start_time" class="form-control" required>
                         </div>
                         <div class="col-4">
-                            <label class="form-label fw-bold">JP</label>
-                            <input type="number" name="jp" class="form-control" placeholder="2" min="1">
+                            <label class="form-label fw-bold text-primary">2. JP <small>(45m)</small></label>
+                            <input type="number" name="jp" id="add_jp" class="form-control border-primary" placeholder="Jml JP" min="1">
                         </div>
+                        <div class="col-4">
+                            <label class="form-label fw-bold">3. Selesai <span class="text-danger">*</span></label>
+                            <input type="time" name="end_time" id="add_end_time" class="form-control bg-light" required title="Terhitung otomatis dari JP">
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted" style="font-size: 11px;">
+                                <i class="bx bx-info-circle me-1"></i> Jam selesai terisi otomatis sesuai JP (1 JP = 45 menit).
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Materi / Kegiatan <span class="text-danger">*</span></label>
+                        <input type="text" name="activity" class="form-control" placeholder="Contoh: Pengantar Transformasi Digital" required>
                     </div>
 
                     <!-- INPUT LINK ZOOM -->
@@ -105,16 +112,16 @@
         </div>
     </div>
 
-    <!-- KOLOM KANAN: TABEL DAFTAR JADWAL -->
+    <!-- KOLOM KANAN: TABEL DAFTAR JADWAL (TEMPLATE LAMA) -->
     <div class="col-md-8">
         <div class="card shadow-sm border-0">
             <div class="table-responsive text-nowrap">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                <table class="table table-hover">
+                    <thead>
                         <tr>
-                            <th>Waktu & JP</th>
-                            <th>Materi, Pengajar & Link</th> 
-                            <th width="120" class="text-center">Aksi</th>
+                            <th>Waktu</th>
+                            <th>Materi & Penanggung Jawab</th> 
+                            <th width="150" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
@@ -122,34 +129,32 @@
                         <tr>
                             <td>
                                 <span class="badge bg-label-secondary">
-                                    {{ \Carbon\Carbon::parse($s->date)->translatedFormat('d M Y') }}
-                                </span><br>
-                                <small class="fw-bold text-dark">{{ $s->start_time }} - {{ $s->end_time }}</small>
+                                    {{ \Carbon\Carbon::parse($s->date)->format('d/m/Y') }}
+                                </span>
                                 @if($s->jp)
                                     <span class="badge bg-label-primary ms-1">{{ $s->jp }} JP</span>
                                 @endif
+                                <br>
+                                <small class="fw-bold">{{ $s->start_time }} - {{ $s->end_time }}</small>
                             </td>
                             <td>
-                                <div class="fw-bold text-dark mb-1">{{ $s->activity }}</div>
-                                <div class="d-flex flex-column gap-1">
-                                    @if($s->pengajar)
-                                        <small class="text-info fw-semibold">
-                                            <i class="bx bx-chalkboard me-1"></i>Pengajar: {{ $s->pengajar->name }}
-                                        </small>
-                                    @else
-                                        <small class="text-muted"><i class="bx bx-minus me-1"></i>Tanpa Pengajar Khusus</small>
+                                <div class="fw-bold text-dark">{{ $s->activity }}</div>
+                                
+                                {{-- Keterangan Pengajar jika ada --}}
+                                @if($s->pengajar)
+                                    <small class="text-info d-block fw-semibold">
+                                        <i class="bx bx-chalkboard me-1"></i>Pengajar: {{ $s->pengajar->name }}
+                                    </small>
+                                @endif
+
+                                {{-- PIC & Link Zoom --}}
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <small class="text-primary"><i class="bx bx-user me-1"></i>{{ $s->pic }}</small>
+                                    @if($s->link_zoom)
+                                        <a href="{{ $s->link_zoom }}" target="_blank" class="badge bg-label-success text-decoration-none">
+                                            <i class="bx bx-video me-1"></i> Buka Zoom
+                                        </a>
                                     @endif
-                                    
-                                    <div class="d-flex align-items-center gap-2">
-                                        <small class="text-muted">
-                                            <i class="bx bx-user me-1"></i>PIC: {{ $s->pic }}
-                                        </small>
-                                        @if($s->link_zoom)
-                                            <a href="{{ $s->link_zoom }}" target="_blank" class="badge bg-label-success text-decoration-none">
-                                                <i class="bx bx-video me-1"></i> Buka Zoom
-                                            </a>
-                                        @endif
-                                    </div>
                                 </div>
                             </td>
                             <td>
@@ -173,10 +178,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="3" class="text-center py-5 text-muted">
-                                <i class="bx bx-calendar-x fs-1 d-block mb-2"></i>
-                                Belum ada sesi jadwal untuk pelatihan ini.
-                            </td>
+                            <td colspan="3" class="text-center py-4 text-muted">Belum ada jadwal.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -197,7 +199,7 @@
             </div>
             <div class="modal-body p-4">
                 <div class="alert alert-info py-2 small mb-3">
-                    <i class="bx bx-info-circle me-1"></i> Template kini mendukung pengisian <strong>Link Zoom</strong> dan pencocokan otomatis <strong>Tenaga Pengajar</strong>.
+                    <i class="bx bx-info-circle me-1"></i> Template mendukung pengisian <strong>JP</strong>, <strong>Link Zoom</strong>, dan pencocokan <strong>Tenaga Pengajar</strong>.
                 </div>
 
                 <div class="mb-3">
@@ -232,28 +234,29 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Tanggal <span class="text-danger">*</span></label>
+                    <label class="form-label fw-bold">Tanggal Sesi <span class="text-danger">*</span></label>
                     <input type="date" name="date" id="edit_date" class="form-control" required>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="form-label fw-bold">Jam Mulai <span class="text-danger">*</span></label>
+
+                <!-- PENGATURAN WAKTU & AKUMULASI JP MODAL EDIT -->
+                <div class="row mb-3 g-2">
+                    <div class="col-4">
+                        <label class="form-label fw-bold">1. Mulai <span class="text-danger">*</span></label>
                         <input type="time" name="start_time" id="edit_start" class="form-control" required>
                     </div>
-                    <div class="col-6">
-                        <label class="form-label fw-bold">Jam Selesai <span class="text-danger">*</span></label>
-                        <input type="time" name="end_time" id="edit_end" class="form-control" required>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-8">
-                        <label class="form-label fw-bold">Materi / Kegiatan <span class="text-danger">*</span></label>
-                        <input type="text" name="activity" id="edit_activity" class="form-control" required>
+                    <div class="col-4">
+                        <label class="form-label fw-bold text-primary">2. JP <small>(45m)</small></label>
+                        <input type="number" name="jp" id="edit_jp" class="form-control border-primary" min="1">
                     </div>
                     <div class="col-4">
-                        <label class="form-label fw-bold">JP</label>
-                        <input type="number" name="jp" id="edit_jp" class="form-control" min="1">
+                        <label class="form-label fw-bold">3. Selesai <span class="text-danger">*</span></label>
+                        <input type="time" name="end_time" id="edit_end" class="form-control bg-light" required title="Terhitung otomatis dari JP">
                     </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Materi / Kegiatan <span class="text-danger">*</span></label>
+                    <input type="text" name="activity" id="edit_activity" class="form-control" required>
                 </div>
 
                 <!-- INPUT EDIT LINK ZOOM -->
@@ -293,6 +296,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
+        // Select2 Inisialisasi
         $('.select2').select2({
             theme: 'bootstrap-5',
             placeholder: '-- Pilih Pengajar --',
@@ -307,8 +311,54 @@
             allowClear: true,
             width: '100%'
         });
+
+        /**
+         * FUNGSI HITUNG JAM SELESAI (1 JP = 45 MENIT)
+         */
+        function calculateEndTime(startTimeVal, jpVal) {
+            if (!startTimeVal || !jpVal || parseInt(jpVal) <= 0) return null;
+
+            const parts = startTimeVal.split(':');
+            const hours = parseInt(parts[0], 10);
+            const minutes = parseInt(parts[1], 10);
+
+            // Total menit = Jumlah JP * 45 Menit
+            const totalMinutesToAdd = parseInt(jpVal, 10) * 45;
+
+            const date = new Date();
+            date.setHours(hours, minutes, 0, 0);
+            date.setMinutes(date.getMinutes() + totalMinutesToAdd);
+
+            const endHours = String(date.getHours()).padStart(2, '0');
+            const endMinutes = String(date.getMinutes()).padStart(2, '0');
+
+            return `${endHours}:${endMinutes}`;
+        }
+
+        // 1. Event Auto Calculate pada Form Tambah
+        $('#add_start_time, #add_jp').on('input change', function() {
+            const startVal = $('#add_start_time').val();
+            const jpVal = $('#add_jp').val();
+            const calculatedEnd = calculateEndTime(startVal, jpVal);
+            if (calculatedEnd) {
+                $('#add_end_time').val(calculatedEnd);
+            }
+        });
+
+        // 2. Event Auto Calculate pada Modal Edit
+        $('#edit_start, #edit_jp').on('input change', function() {
+            const startVal = $('#edit_start').val();
+            const jpVal = $('#edit_jp').val();
+            const calculatedEnd = calculateEndTime(startVal, jpVal);
+            if (calculatedEnd) {
+                $('#edit_end').val(calculatedEnd);
+            }
+        });
     });
 
+    /**
+     * Memasukkan Data ke Modal Edit
+     */
     function editSchedule(data) {
         const url = "{{ url('schedules') }}/" + data.id;
         $('#formEditSchedule').attr('action', url);
@@ -318,7 +368,7 @@
         $('#edit_end').val(data.end_time);
         $('#edit_activity').val(data.activity);
         $('#edit_jp').val(data.jp);
-        $('#edit_link_zoom').val(data.link_zoom); // <-- Bind Link Zoom
+        $('#edit_link_zoom').val(data.link_zoom);
         $('#edit_pic').val(data.pic);
         $('#edit_pengajar_id').val(data.pengajar_id).trigger('change');
     }

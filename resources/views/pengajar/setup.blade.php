@@ -67,13 +67,20 @@
                         </option>
                     </select>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Pangkat / Golongan <span class="required-star">*</span></label>
-                    <input type="text" name="pangkat_golongan" class="form-control" placeholder="Contoh: Pembina Tingkat I (IV/b)" value="{{ old('pangkat_golongan') }}" required>
+                <div class="col-md-12 mb-3">
+                     <label class="form-label fw-bold">Pangkat / Golongan <span class="required-star">*</span></label>
+                        <select name="pangkat_golongan" id="select_pangkat_golongan" class="form-select select2" required>
+                            <option value="">-- Sedang Memuat Pangkat / Golongan... --</option>
+                        </select>
                 </div>
+
+                <!-- DROPDOWN INSTANSI PEMERINTAHAN (SEARCHABLE) -->
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Instansi / Unit Kerja <span class="required-star">*</span></label>
-                    <input type="text" name="instansi" class="form-control" placeholder="Contoh: BPSDM Provinsi Jawa Barat" value="{{ old('instansi', auth()->user()->instansi) }}" required>
+                    <select name="instansi" id="select_instansi" class="form-select select2" required>
+                        <option value="">-- Pilih / Ketik Instansi --</option>
+                    </select>
+                    <div class="form-text small">Ketik nama kementerian/dinas untuk mencari, atau ketik langsung jika tidak ada di daftar.</div>
                 </div>
             </div>
         </div>
@@ -95,11 +102,11 @@
                     <input type="number" name="nomor_rekening" class="form-control" placeholder="Contoh: 1234567890" value="{{ old('nomor_rekening') }}" required>
                 </div>
 
-                <!-- DROPDOWN BANK (SEARCHABLE DENGAN API) -->
+                <!-- DROPDOWN BANK (SEARCHABLE) -->
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Bank Asal Rekening <span class="required-star">*</span></label>
                     <select name="nama_bank" id="nama_bank" class="form-select select2" required>
-                        <option value="">-- Sedang Memuat Daftar Bank... --</option>
+                        <option value="">-- Pilih / Ketik Bank --</option>
                     </select>
                 </div>
 
@@ -122,25 +129,16 @@
             </div>
 
             <div class="row">
-                <!-- 1. CV Pengajar -->
                 <div class="col-md-12 mb-3">
                     <label class="form-label">Curriculum Vitae (CV) Pengajar</label>
                     <input type="file" name="file_cv" class="form-control" accept=".pdf">
                     <div class="form-text small">Unggah CV terbaru Anda dalam format PDF.</div>
                 </div>
 
-                <!-- 2. Sertifikat ToT / Keahlian -->
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Sertifikat ToT / Sertifikat Kompetensi</label>
                     <input type="file" name="file_sertifikat" class="form-control" accept=".pdf">
                     <div class="form-text small">Sertifikat Training of Trainer atau bukti keahlian mengajar.</div>
-                </div>
-
-                <!-- 3. Surat Tugas Pengajar -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Surat Tugas Pengajar</label>
-                    <input type="file" name="file_surat_tugas" class="form-control" accept=".pdf">
-                    <div class="form-text small">Surat tugas dari instansi pengirim / penyelenggara.</div>
                 </div>
             </div>
         </div>
@@ -150,50 +148,143 @@
 
 @push('form_js')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const bankSelect = document.getElementById('nama_bank');
-    const oldBankValue = "{{ old('nama_bank') }}";
-    const apiBankUrl = 'https://raw.githubusercontent.com/riod94/list-bank-indonesia/master/bank.json';
+$(document).ready(function() {
+    const oldInstansi = "{{ old('instansi', auth()->user()->instansi ?? '') }}";
+    const oldBank = "{{ old('nama_bank') }}";
 
-    const fallbackBanks = [
-        "BANK BJB", "BANK BJB SYARIAH", "BANK BRI", "BANK MANDIRI", "BANK BNI", "BANK BCA", 
-        "BANK SYARIAH INDONESIA (BSI)", "BANK CIMB NIAGA", "BANK PERMATA", "BANK DANAMON", 
-        "BANK TABUNGAN NEGARA (BTN)", "BANK PANIN", "BANK MEGA", "BANK DKI", "BANK JATENG", "BANK JATIM"
+    // 1. DAFTAR MASTER INSTANSI UTAMA (Langsung terpasang seketika, no delay/no loading)
+    const masterInstansi = [
+        "BPSDM Provinsi Jawa Barat",
+        "Pemerintah Daerah Provinsi Jawa Barat",
+        "Badan Kepegawaian Daerah Provinsi Jawa Barat",
+        "Kementerian Dalam Negeri (Kemendagri)",
+        "Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi (KemenPAN-RB)",
+        "Badan Kepegawaian Negara (BKN)",
+        "Lembaga Administrasi Negara (LAN)",
+        "Badan Pengawasan Keuangan dan Pembangunan (BPKP)",
+        "Badan Pusat Statistik (BPS)",
+        "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi",
+        "Kementerian Keuangan",
+        "Kementerian Kesehatan",
+        "Kementerian Agama",
+        "Kementerian Hukum dan HAM",
+        "Kementerian Komunikasi dan Informatika",
+        "Kementerian Perhubungan",
+        "Pemerintah Kota Bandung",
+        "Pemerintah Kabupaten Bandung",
+        "Pemerintah Kabupaten Bandung Barat",
+        "Pemerintah Kota Cimahi",
+        "Pemerintah Kabupaten Sumedang",
+        "Pemerintah Kota Bogor",
+        "Pemerintah Kabupaten Bogor",
+        "Pemerintah Kota Bekasi",
+        "Pemerintah Kabupaten Bekasi",
+        "Pemerintah Kabupaten Cirebon",
+        "Pemerintah Kota Cirebon",
+        "Pemerintah Kabupaten Garut",
+        "Pemerintah Kabupaten Tasikmalaya",
+        "Pemerintah Kota Tasikmalaya",
+        "Pemerintah Kabupaten Sukabumi",
+        "Pemerintah Kota Sukabumi",
+        "Pemerintah Kabupaten Cianjur",
+        "Pemerintah Kabupaten Karawang",
+        "Pemerintah Kabupaten Purwakarta",
+        "Pemerintah Kabupaten Subang",
+        "Pemerintah Kabupaten Indramayu",
+        "Pemerintah Kabupaten Majalengka",
+        "Pemerintah Kabupaten Kuningan",
+        "Pemerintah Kabupaten Ciamis",
+        "Pemerintah Kota Banjar",
+        "Pemerintah Kabupaten Pangandaran"
     ];
 
-    function initSelect2() {
-        $('#nama_bank').select2({
+    // Inisialisasi awal dropdown Instansi
+    function renderInstansi(list) {
+        let html = '<option value="">-- Pilih / Ketik Instansi Pemerintahan --</option>';
+        
+        // Sisipkan nilai lama jika ada
+        if (oldInstansi && !list.includes(oldInstansi)) {
+            list.unshift(oldInstansi);
+        }
+
+        list.forEach(name => {
+            let selected = (oldInstansi && oldInstansi.toLowerCase() === name.toLowerCase()) ? 'selected' : '';
+            html += `<option value="${name}" ${selected}>${name}</option>`;
+        });
+
+        $('#select_instansi').html(html).select2({
             theme: 'bootstrap-5',
-            placeholder: '-- Ketik untuk mencari Bank --',
-            allowClear: true,
+            placeholder: '-- Ketik / Cari Instansi Pemerintahan --',
+            tags: true, // Memungkinkan pengajar mengetik nama dinas/instansi sendiri
             width: '100%'
         });
     }
 
-    function renderBankOptions(banks) {
-        let options = '<option value="">-- Pilih Bank Asal Rekening --</option>';
-        banks.forEach(bank => {
-            let bankName = typeof bank === 'object' ? (bank.namaBank || bank.name || bank.label) : bank;
-            if (bankName) {
-                bankName = bankName.toUpperCase();
-                const isSelected = (oldBankValue && oldBankValue.toUpperCase() === bankName) ? 'selected' : '';
-                options += `<option value="${bankName}" ${isSelected}>${bankName}</option>`;
-            }
-        });
-        bankSelect.innerHTML = options;
-        initSelect2();
-    }
+    // Render instansi seketika (tidak menunggu loading API yang lama)
+    renderInstansi(masterInstansi);
 
-    fetch(apiBankUrl)
+    // 2. DAFTAR MASTER BANK INDONESIA (Langsung terpasang instan)
+    const masterBank = [
+        "BANK BJB", "BANK BJB SYARIAH", "BANK BRI", "BANK MANDIRI", "BANK BNI", "BANK BCA", 
+        "BANK SYARIAH INDONESIA (BSI)", "BANK CIMB NIAGA", "BANK PERMATA", "BANK DANAMON", 
+        "BANK TABUNGAN NEGARA (BTN)", "BANK PANIN", "BANK MEGA", "BANK DKI", "BANK JATENG", 
+        "BANK JATIM", "BANK BUKOPIN", "BANK BTPN", "BANK OCBC NISP", "BANK MAYBANK INDONESIA"
+    ];
+
+    let bankHtml = '<option value="">-- Pilih / Cari Bank Asal Rekening --</option>';
+    masterBank.forEach(name => {
+        let selected = (oldBank && oldBank.toUpperCase() === name.toUpperCase()) ? 'selected' : '';
+        bankHtml += `<option value="${name}" ${selected}>${name}</option>`;
+    });
+
+    $('#nama_bank').html(bankHtml).select2({
+        theme: 'bootstrap-5',
+        placeholder: '-- Ketik untuk mencari Bank --',
+        tags: true,
+        width: '100%'
+    });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const $pangkatSelect = $('#select_pangkat_golongan');
+    const selectedPangkat = "{{ old('pangkat_golongan', auth()->user()->pengajar->pangkat_golongan ?? '') }}";
+
+    // Ambil data JSON lokal aplikasi
+    fetch("{{ asset('data/pangkat_golongan.json') }}")
         .then(response => response.json())
         .then(data => {
-            const list = Array.isArray(data) ? data : (data.data || data.banks || []);
-            renderBankOptions(list);
+            let options = '<option value="">-- Pilih / Cari Pangkat & Golongan --</option>';
+
+            // Kelompokkan berdasarkan Golongan PNS dan PPPK
+            const pnsData = data.filter(item => item.kategori === 'PNS');
+            const pppkData = data.filter(item => item.kategori === 'PPPK');
+
+            options += '<optgroup label="PNS (Pegawai Negeri Sipil)">';
+            pnsData.forEach(item => {
+                const isSelected = (selectedPangkat === item.label) ? 'selected' : '';
+                options += `<option value="${item.label}" ${isSelected}>${item.label}</option>`;
+            });
+            options += '</optgroup>';
+
+            options += '<optgroup label="PPPK (Pegawai Pemerintah dengan Perjanjian Kerja)">';
+            pppkData.forEach(item => {
+                const isSelected = (selectedPangkat === item.label) ? 'selected' : '';
+                options += `<option value="${item.label}" ${isSelected}>${item.label}</option>`;
+            });
+            options += '</optgroup>';
+
+            $pangkatSelect.html(options);
+
+            // Inisialisasi Select2 pencarian
+            $pangkatSelect.select2({
+                theme: 'bootstrap-5',
+                placeholder: '-- Ketik untuk mencari Golongan / Pangkat --',
+                width: '100%'
+            });
         })
-        .catch(error => {
-            console.warn('API luar gagal, menggunakan fallback:', error);
-            renderBankOptions(fallbackBanks);
+        .catch(err => {
+            console.error('Gagal memuat dataset pangkat golongan:', err);
         });
 });
 </script>
+
 @endpush

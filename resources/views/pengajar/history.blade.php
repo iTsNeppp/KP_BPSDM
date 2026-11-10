@@ -10,7 +10,7 @@
         width: 100%;
     }
     .table-responsive-custom table {
-        min-width: 800px;
+        min-width: 850px;
     }
     .text-wrap-cell {
         white-space: normal !important;
@@ -98,9 +98,10 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="min-width: 260px;">Nama Pelatihan & Periode</th>
-                        <th style="min-width: 150px;">Bidang & Angkatan</th>
-                        <th style="min-width: 280px;">Sesi Materi yang Diajarkan</th>
+                        <th width="4%" class="text-center">No</th>
+                        <th style="min-width: 280px;">Nama Pelatihan & Materi</th>
+                        <th style="min-width: 150px;">Bidang</th>
+                        <th style="min-width: 240px;">Sesi & Lokasi</th>
                         <th style="min-width: 100px;" class="text-center">Total JP</th>
                         <th style="min-width: 130px;" class="text-center">Dokumen</th>
                     </tr>
@@ -108,54 +109,70 @@
                 <tbody class="table-border-bottom-0">
                     @forelse($trainings as $t)
                     <tr>
-                        <!-- Kolom Nama Pelatihan -->
+                        <!-- 1. Kolom Nomor Urut -->
+                        <td class="text-center fw-bold">{{ $loop->iteration }}</td>
+
+                        <!-- 2. Kolom Nama Pelatihan & Materi -->
                         <td class="text-wrap-cell">
                             <strong class="text-dark d-block mb-1 fs-6">{{ $t->nama_pelatihan }}</strong>
-                            <small class="text-muted d-block">
-                                <i class="bx bx-calendar-check text-success me-1"></i>
-                                {{ \Carbon\Carbon::parse($t->tgl_mulai)->translatedFormat('d M Y') }} s.d {{ \Carbon\Carbon::parse($t->tgl_selesai)->translatedFormat('d M Y') }}
-                            </small>
-                            <small class="text-muted d-block">
-                                <i class="bx bx-map-pin me-1"></i>{{ $t->lokasi ?? 'BPSDM Jabar' }}
-                            </small>
-                        </td>
-
-                        <!-- Kolom Bidang & Angkatan -->
-                        <td class="text-wrap-cell">
-                            <span class="badge bg-label-primary mb-1 d-inline-block">{{ $t->bidang }}</span><br>
-                            <small class="text-muted fw-semibold">Angkatan {{ $t->angkatan }}</small>
-                        </td>
-
-                        <!-- Kolom Rincian Sesi Materi -->
-                        <td class="text-wrap-cell">
-                            <ul class="list-unstyled mb-0 small">
-                                @forelse($t->schedules as $s)
-                                    <li class="mb-2 pb-1 border-bottom border-light">
-                                        <div class="d-flex align-items-start">
-                                            <i class="bx bx-check-circle text-success me-2 mt-1 flex-shrink-0"></i>
+                            <span class="badge bg-label-secondary mb-2">Angkatan {{ $t->angkatan }}</span>
+                            
+                            <div class="mt-1">
+                                <ul class="list-unstyled mb-0 small ps-1">
+                                    @forelse($t->schedules as $s)   
                                             <div>
-                                                <strong>{{ \Carbon\Carbon::parse($s->date)->translatedFormat('d M Y') }} ({{ $s->start_time }} - {{ $s->end_time }}):</strong><br>
                                                 <span class="text-dark">{{ $s->activity }}</span>
                                                 @if($s->jp)
-                                                    <span class="badge bg-label-info ms-1">{{ $s->jp }} JP</span>
+                                                    <span class="badge bg-label-info ms-1" style="font-size: 0.65rem;">{{ $s->jp }} JP</span>
                                                 @endif
                                             </div>
-                                        </div>
+                                        </li>
+                                    @empty
+                                        <li class="text-muted fst-italic">Tidak ada catatan materi.</li>
+                                    @endforelse
+                                </ul>
+                            </div>
+                        </td>
+
+                        <!-- 3. Kolom Bidang -->
+                        <td class="text-wrap-cell">
+                            <span class="badge bg-label-primary text-wrap mb-1">{{ $t->bidang }}</span>
+                            <small class="text-muted d-block">Model: {{ ucfirst($t->model ?? 'Standar') }}</small>
+                        </td>
+
+                        <!-- 4. Kolom Sesi & Lokasi -->
+                        <td class="text-wrap-cell">
+                            <div class="mb-2">
+                                <small class="text-muted d-block mb-1">
+                                    <i class="bx bx-calendar me-1 text-secondary"></i>
+                                    {{ \Carbon\Carbon::parse($t->tgl_mulai)->translatedFormat('d M Y') }} s.d {{ \Carbon\Carbon::parse($t->tgl_selesai)->translatedFormat('d M Y') }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="bx bx-map-pin me-1 text-danger"></i>{{ $t->lokasi ?? 'BPSDM Jabar' }}
+                                </small>
+                            </div>
+
+    
+                            <ul class="list-unstyled mb-0 small ps-1">
+                                @forelse($t->schedules as $s)
+                                    <li class="mb-1 text-muted">
+                                        <strong>{{ \Carbon\Carbon::parse($s->date)->translatedFormat('d M Y') }}:</strong>
+                                        <span>{{ $s->start_time }} - {{ $s->end_time }} WIB</span>
                                     </li>
                                 @empty
-                                    <li class="text-muted fst-italic">Tidak ada catatan sesi.</li>
+                                    <li class="text-muted fst-italic">-</li>
                                 @endforelse
                             </ul>
                         </td>
 
-                        <!-- Kolom Total JP pada Pelatihan ini -->
+                        <!-- 5. Kolom Total JP -->
                         <td class="text-center">
                             <span class="badge bg-label-success fs-6 fw-bold">
                                 {{ $t->schedules->sum('jp') }} JP
                             </span>
                         </td>
 
-                        <!-- Kolom Unduh Dokumen PDF -->
+                        <!-- 6. Kolom Dokumen (Unduh PDF) -->
                         <td class="text-center">
                             <a href="{{ route('schedules.pdf', $t->id) }}" class="btn btn-sm btn-outline-danger shadow-sm" target="_blank" title="Unduh Arsip Jadwal PDF">
                                 <i class="bx bxs-file-pdf me-1"></i> Unduh PDF
@@ -164,7 +181,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             <i class="bx bx-history fs-1 d-block mb-2 text-secondary"></i>
                             <h6 class="fw-bold mb-1">Belum Ada Riwayat Pelatihan</h6>
                             <p class="small text-muted mb-0">Pelatihan yang telah selesai Anda ajar akan otomatis terarsipkan di halaman ini.</p>

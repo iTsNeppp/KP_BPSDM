@@ -10,7 +10,6 @@
             </span>
             <span class="app-brand-text demo menu-text fw-bolder ms-2 text-uppercase" style="letter-spacing: 1px; font-size: 1.25rem;">Integral</span>
         </a>
-
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
             <i class="bx bx-chevron-left bx-sm align-middle"></i>
         </a>
@@ -39,6 +38,14 @@
                 <a href="{{ route('trainings.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-collection"></i>
                     <div>Daftar Pelatihan</div>
+                </a>
+            </li>
+
+            <!-- MENU MONITORING PENGAJAR -->
+            <li class="menu-item {{ request()->routeIs('monitoring.pengajar.*') ? 'active' : '' }}">
+                <a href="{{ route('monitoring.pengajar.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-chalkboard"></i>
+                    <div>Monitoring Pengajar</div>
                 </a>
             </li>
 
@@ -98,6 +105,18 @@
                 </a>
             </li>
             @endif
+
+            <!-- TOMBOL LOGOUT ADMIN -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Sesi Akun</span>
+            </li>
+            <li class="menu-item">
+                <a href="{{ route('logout') }}" class="menu-link text-danger" 
+                   onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
+                    <i class="menu-icon tf-icons bx bx-power-off text-danger"></i>
+                    <div class="fw-bold text-danger">Keluar / Logout</div>
+                </a>
+            </li>
         @endif
 
         <!-- ========================================================= -->
@@ -122,23 +141,29 @@
                 </a>
             </li>
 
-            <li class="menu-item {{ request()->routeIs('pengajar.schedule') ? 'active' : '' }}">
+            <li class="menu-item {{ request()->routeIs('pengajar.schedules') || request()->routeIs('pengajar.schedule') ? 'active' : '' }}">
                 <a href="{{ route('pengajar.schedule') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-chalkboard"></i>
                     <div>Daftar Pelatihan Saya</div>
                 </a>
             </li>
 
-            <li class="menu-item {{ request()->is('documents*') ? 'active' : '' }}">
-                <a href="{{ route('documents.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-folder-open"></i>
-                    <div>Bahan Ajar & Dokumen</div>
-                </a>
-            </li>
-             <li class="menu-item {{ request()->routeIs('pengajar.history') ? 'active' : '' }}">
+            <li class="menu-item {{ request()->routeIs('pengajar.history') ? 'active' : '' }}">
                 <a href="{{ route('pengajar.history') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-history"></i>
                     <div>Riwayat Pelatihan</div>
+                </a>
+            </li>
+
+            <!-- TOMBOL LOGOUT PENGAJAR -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Sesi Akun</span>
+            </li>
+            <li class="menu-item">
+                <a href="{{ route('logout') }}" class="menu-link text-danger" 
+                   onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
+                    <i class="menu-icon tf-icons bx bx-power-off text-danger"></i>
+                    <div class="fw-bold text-danger">Keluar / Logout</div>
                 </a>
             </li>
         @endif
@@ -171,12 +196,28 @@
                     <div>Riwayat Pelatihan</div>
                 </a>
             </li>
+
+            <!-- TOMBOL LOGOUT PESERTA -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Sesi Akun</span>
+            </li>
+            <li class="menu-item">
+                <a href="{{ route('logout') }}" class="menu-link text-danger" 
+                   onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
+                    <i class="menu-icon tf-icons bx bx-power-off text-danger"></i>
+                    <div class="fw-bold text-danger">Keluar / Logout</div>
+                </a>
+            </li>
         @endif
 
     </ul>
+
+    <!-- FORM LOGOUT GLOBAL UNTUK SIDEBAR (TERSEMBUNYI) -->
+    <form id="logout-form-sidebar" action="{{ route('logout') }}" method="POST" class="d-none">
+        @csrf
+    </form>
 </aside>
 
-{{-- CSS CUSTOM UNTUK INTERAKTIVITAS --}}
 @push('css')
 <style>
     /* Transisi menu */
@@ -187,7 +228,7 @@
         padding-left: 1rem;
     }
 
-    /* Efek Hover */
+    /* Efek Hover Menu Standar */
     .menu-vertical .menu-item:not(.active):not(.open) .menu-link:hover {
         background-color: rgba(105, 108, 255, 0.08) !important;
         transform: translateX(5px);
@@ -199,9 +240,18 @@
         transform: scale(1.1);
     }
 
+    /* Efek Hover Khusus Tombol Logout */
+    .menu-vertical .menu-item .menu-link.text-danger:hover {
+        background-color: rgba(255, 62, 29, 0.1) !important;
+        color: #ff3e1d !important;
+    }
+    .menu-vertical .menu-item .menu-link.text-danger:hover i {
+        color: #ff3e1d !important;
+    }
+
     /* Mempercantik Menu Header */
     .menu-header {
-        margin: 1.5rem 0 0.5rem 0 !important;
+        margin: 1.25rem 0 0.5rem 0 !important;
         padding-left: 1.5rem;
     }
 
@@ -220,11 +270,6 @@
 
     .menu-vertical .menu-item.active > .menu-link i {
         color: #fff !important;
-    }
-
-    /* Animasi Dropdown */
-    .menu-sub {
-        transition: all 0.3s ease-in-out;
     }
 </style>
 @endpush

@@ -1,0 +1,28 @@
+[
+  { "golongan": "I/a", "pangkat": "Juru Muda", "label": "Juru Muda (I/a)", "kategori": "PNS" },
+  { "golongan": "I/b", "pangkat": "Juru Muda Tingkat I", "label": "Juru Muda Tingkat I (I/b)", "kategori": "PNS" },
+  { "golongan": "I/c", "pangkat": "Juru", "label": "Juru (I/c)", "kategori": "PNS" },
+  { "golongan": "I/d", "pangkat": "Juru Tingkat I", "label": "Juru Tingkat I (I/d)", "kategori": "PNS" },
+
+  { "golongan": "II/a", "pangkat": "Pengatur Muda", "label": "Pengatur Muda (II/a)", "kategori": "PNS" },
+  { "golongan": "II/b", "pangkat": "Pengatur Muda Tingkat I", "label": "Pengatur Muda Tingkat I (II/b)", "kategori": "PNS" },
+  { "golongan": "II/c", "pangkat": "Pengatur", "label": "Pengatur (II/c)", "kategori": "PNS" },
+  { "golongan": "II/d", "pangkat": "Pengatur Tingkat I", "label": "Pengatur Tingkat I (II/d)", "kategori": "PNS" },
+
+  { "golongan": "III/a", "pangkat": "Penata Muda", "label": "Penata Muda (III/a)", "kategori": "PNS" },
+  { "golongan": "III/b", "pangkat": "Penata Muda Tingkat I", "label": "Penata Muda Tingkat I (III/b)", "kategori": "PNS" },
+  { "golongan": "III/c", "pangkat": "Penata", "label": "Penata (III/c)", "kategori": "PNS" },
+  { "golongan": "III/d", "pangkat": "Penata Tingkat I", "label": "Penata Tingkat I (III/d)", "kategori": "PNS" },
+
+  { "golongan": "IV/a", "pangkat": "Pembina", "label": "Pembina (IV/a)", "kategori": "PNS" },
+  { "golongan": "IV/b", "pangkat": "Pembina Tingkat I", "label": "Pembina Tingkat I (IV/b)", "kategori": "PNS" },
+  { "golongan": "IV/c", "pangkat": "Pembina Utama Muda", "label": "Pembina Utama Muda (IV/c)", "kategori": "PNS" },
+  { "golongan": "IV/d", "pangkat": "Pembina Utama Madya", "label": "Pembina Utama Madya (IV/d)", "kategori": "PNS" },
+  { "golongan": "IV/e", "pangkat": "Pembina Utama", "label": "Pembina Utama (IV/e)", "kategori": "PNS" },
+
+  { "golongan": "Golongan VII", "pangkat": "PPPK Ahli Pertama", "label": "Golongan VII - PPPK (Setara III/a)", "kategori": "PPPK" },
+  { "golongan": "Golongan IX", "pangkat": "PPPK Ahli Pertama (S1/D4)", "label": "Golongan IX - PPPK (Setara III/a)", "kategori": "PPPK" },
+  { "golongan": "Golongan X", "pangkat": "PPPK Ahli Muda (S2)", "label": "Golongan X - PPPK (Setara III/b)", "kategori": "PPPK" },
+  { "golongan": "Golongan XI", "pangkat": "PPPK Ahli Muda", "label": "Golongan XI - PPPK (Setara III/c)", "kategori": "PPPK" },
+  { "golongan": "Golongan XIII", "pangkat": "PPPK Ahli Madya", "label": "Golongan XIII - PPPK (Setara IV/a)", "kategori": "PPPK" }
+]

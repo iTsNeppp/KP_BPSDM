@@ -11,7 +11,7 @@ use App\Models\EvaluationResultL34;
 use App\Models\MonitoringResult;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -30,14 +30,15 @@ class DashboardController extends Controller
         // 2. JIKA ROLE ADALAH PENGAJAR
         // ==========================================
         if ($user->role === 'pengajar') {
-            if (!$user->pengajar) {
+            // Jika data pengajar belum ada atau rekening masih kosong, paksa ke setup
+            if (!$user->pengajar || empty($user->pengajar->nomor_rekening) || empty($user->pengajar->nama_bank)) {
                 return redirect()->route('pengajar.setup')
                     ->with('warning', 'Silakan lengkapi profil dan data rekening Anda terlebih dahulu.');
             }
 
             $user->load('pengajar');
 
-            // 1. DATA PELATIHAN YANG DIAJAR
+            // 1. Data Pelatihan yang diajar oleh pengajar ini
             $myTrainings = Training::whereHas('schedules', function($q) use ($user) {
                 $q->where('pengajar_id', $user->id);
             })->get();
@@ -61,7 +62,7 @@ class DashboardController extends Controller
             // 5. Pelatihan Tahun Ini
             $pelatihanTahunIni = $myTrainingsThisYear->count();
             
-            // 6. Persentase Capaian JP (Target 20 JP per tahun, dikunci maksimal 100%)
+            // 6. Persentase Capaian JP (Target 20 JP per tahun, dikunci maksimal 100% dan minimal 0%)
             $targetJp = 20; 
             $persentaseJp = $targetJp > 0 ? min(100, max(0, round(($jpTahunIni / $targetJp) * 100))) : 0;
 
@@ -87,28 +88,16 @@ class DashboardController extends Controller
 
         $trainingIds = $query->pluck('id');
 
-        // ==========================================
-        // 3. JIKA ROLE ADALAH SUPERADMIN / ADMIN BIDANG
-        // ==========================================
-        $query = Training::query();
-
-        // Role Filter (Admin Bidang hanya melihat bidangnya sendiri)
-        if ($user->role !== 'superadmin') {
-            $query->where('bidang', $user->bidang);
-        }
-
-        $trainingIds = $query->pluck('id');
-
         // 1. STATISTIK UTAMA
         $stats = [
-            'total_training' => $query->count(),
-            'total_participants' => Participant::whereIn('training_id', $trainingIds)->count(),
-            'avg_attendance' => Attendance::whereHas('schedule', function($q) use ($trainingIds){
-                                    $q->whereIn('training_id', $trainingIds);
-                                })->where('status', 'hadir')->count(),
+            'total_training'        => $query->count(),
+            'total_participants'    => Participant::whereIn('training_id', $trainingIds)->count(),
+            'avg_attendance'        => Attendance::whereHas('schedule', function($q) use ($trainingIds){
+                                            $q->whereIn('training_id', $trainingIds);
+                                        })->where('status', 'hadir')->count(),
             'total_attendance_logs' => Attendance::whereHas('schedule', function($q) use ($trainingIds){
-                                    $q->whereIn('training_id', $trainingIds);
-                                })->count(),
+                                            $q->whereIn('training_id', $trainingIds);
+                                        })->count(),
         ];
 
         // 2. KIRKPATRICK LEVEL 1 (Reaction)
@@ -127,7 +116,7 @@ class DashboardController extends Controller
         $avgL4 = EvaluationResultL34::whereIn('training_id', $trainingIds)->avg('score') ?? 0; // Agregat seluruhnya
 
         // 5. MONITORING SUMMARY (Compliance)
-        $monYa = MonitoringResult::whereIn('training_id', $trainingIds)->where('answer', 'ya')->count();
+        $monYa    = MonitoringResult::whereIn('training_id', $trainingIds)->where('answer', 'ya')->count();
         $monTidak = MonitoringResult::whereIn('training_id', $trainingIds)->where('answer', 'tidak')->count();
 
         // 6. PELATIHAN TERBARU

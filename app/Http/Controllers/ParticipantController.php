@@ -200,45 +200,56 @@ class ParticipantController extends Controller
             $participant->update(['user_id' => $user->id]);
         }
 
-        // 1. Dapatkan/Buat Folder Utama Pelatihan
-        
-        $parentFolder = Folder::firstOrCreate(
-            ['training_id' => $id],
-            [
-                'name' => $training->nama_pelatihan,
-                'bidang' => $training->bidang,
-                'user_id' => Auth::id()
-            ]
-        );
-
-        // 2. Dapatkan/Buat Sub-Folder "KELENGKAPAN PESERTA"
-        $subFolder = Folder::firstOrCreate([
-            'name' => 'KELENGKAPAN PESERTA',
-            'parent_id' => $training->folder->id,
-            'training_id' => $id,
-            'bidang' => $training->bidang
-        ], ['user_id' => Auth::id()]);
-
-        // 3. Simpan File
-        $extension = $request->file('file')->getClientOriginalExtension();
-        $fileName = strtoupper($request->type) . '_' . str_replace(' ', '_', $user->name) . '_' . time() . '.' . $extension;
-        $path = $request->file('file')->storeAs('documents', $fileName, 'public');
-
-        // 4. Catat ke tabel Files
-        $fileRecord = File::create([
-            'folder_id' => $subFolder->id,
-            'display_name' => $fileName,
-            'file_path' => $path,
-            'file_type' => $extension,
-            'file_size' => $request->file('file')->getSize(),
-            'user_id' => $user->id
+         // 1. Validasi File
+        $request->validate([
+            'file' => 'required|file|max:5120', // Maksimal 5MB
+            'type' => 'required|string',
+        ], [
+            'file.required' => 'Silakan pilih file yang ingin diunggah.',
+            'file.max'      => 'Ukuran file maksimal 5MB.',
         ]);
 
-        // 5. Update referensi file di tabel Participants
-        $column = $request->type . '_file_id';
-        $participant->update([$column => $fileRecord->id]);
+        $training = Training::findOrFail($id);
+        $user = Auth::user();
 
-        return redirect()->back()->with('success', 'Berkas ' . strtoupper($request->type) . ' berhasil diunggah.');
+        // 2. Dapatkan atau Buat Otomatis Folder Utama Pelatihan jika belum ada
+        $mainFolder = Folder::firstOrCreate([
+            'training_id' => $id,
+            'parent_id'   => null,
+        ], [
+            'name'        => $training->nama_pelatihan . ' - Angkatan ' . ($training->angkatan ?? '1'),
+            'bidang'      => $training->bidang,
+            'user_id'     => Auth::id() ?? 1,
+            'is_public'   => false,
+        ]);
+
+        // 3. Dapatkan/Buat Sub-Folder "KELENGKAPAN PESERTA"
+        $subFolder = Folder::firstOrCreate([
+            'name'        => 'KELENGKAPAN PESERTA',
+            'parent_id'   => $mainFolder->id,
+            'training_id' => $id,
+            'bidang'      => $training->bidang
+        ], [
+            'user_id'     => Auth::id()
+        ]);
+
+        // 4. Simpan File Fisik ke Storage
+        $extension = $request->file('file')->getClientOriginalExtension();
+        $cleanUserName = str_replace(' ', '_', preg_replace('/[^A-Za-z0-9\-]/', '', $user->name));
+        $fileName = strtoupper($request->type) . '_' . $cleanUserName . '_' . time() . '.' . $extension;
+        $path = $request->file('file')->storeAs('documents', $fileName, 'public');
+
+        // 5. Catat ke tabel Files di Database
+        File::create([
+            'folder_id'    => $subFolder->id,
+            'display_name' => $fileName,
+            'file_path'    => $path,
+            'file_type'    => $extension,
+            'file_size'    => $request->file('file')->getSize(),
+            'user_id'      => Auth::id()
+        ]);
+
+        // 6. INI YANG WAJIB ADA: Kembalikan tampilan ke halaman sebelumnya dengan pesan sukses
+        return redirect()->back()->with('success', 'Dokumen ' . strtoupper($request->type) . ' berhasil diunggah!');
     }
-    
 }

@@ -204,7 +204,25 @@ Route::middleware(['auth'])->group(function () {
     // RUTE RIWAYAT PELATIHAN PENGAJAR
     Route::get('/pengajar/riwayat-pelatihan', [\App\Http\Controllers\TrainingController::class, 'pengajarHistory'])->name('pengajar.history');
 
+    // --- MONITORING PENGAJAR & KEUANGAN (ADMIN & SUPERADMIN) ---
+    Route::get('/monitoring-pengajar', [\App\Http\Controllers\PengajarMonitoringController::class, 'index'])->name('monitoring.pengajar.index');
+    Route::get('/monitoring-pengajar/export-keuangan', [\App\Http\Controllers\PengajarMonitoringController::class, 'exportFinance'])->name('monitoring.pengajar.export');
+
+    Route::post('/pengajar/training/{id}/upload-surat-tugas', [\App\Http\Controllers\TrainingController::class, 'uploadSuratTugasPengajar'])->name('pengajar.surat_tugas.upload');
+
     
+    // RUTE KHUSUS MELIHAT BERKAS PENGAJAR (CV, SERTIFIKAT, SURAT TUGAS)
+    Route::get('/pengajar/dokumen/view/{type}', [\App\Http\Controllers\ProfileController::class, 'viewPengajarDoc'])->name('pengajar.doc.view');
+
+    // RUTE STREAMING MEMBUKA SURAT TUGAS PENGAJAR
+    Route::get('/pengajar/training/{id}/surat-tugas/view', [\App\Http\Controllers\TrainingController::class, 'viewSuratTugasPengajar'])->name('pengajar.surat_tugas.view');
+
+    // RUTE STREAMING BERKAS PENGAJAR UNTUK ADMIN MONITORING
+    Route::get('/monitoring-pengajar/{user_id}/file/{type}', [\App\Http\Controllers\PengajarMonitoringController::class, 'viewFile'])->name('monitoring.pengajar.file.view');
+
+     // RUTE UNDUH PDF KETERANGAN / DETAIL MENGAJAR PENGAJAR
+    Route::get('/monitoring-pengajar/{user_id}/pdf-keterangan', [\App\Http\Controllers\PengajarMonitoringController::class, 'downloadKeteranganMengajarPdf'])->name('monitoring.pengajar.keterangan.pdf');
+
     // --- EVALUASI KIRKPATRICK (Admin View) ---
 
     // Level 1: Reaction
